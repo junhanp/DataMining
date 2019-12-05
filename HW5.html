@@ -1,0 +1,1017 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+
+  <div class="border-box-sizing">
+    <div class="container">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ol>
+<li><p>Bootstrapping- Resampling technique that generates many sample datasets by repeatedly sampling your data.  We use the bootstrapping method if we don&#39;t have enough data, we simply just insert a copy of the previous data, repeat until there is enough data.</p>
+</li>
+<li><p>Advantages: fills the sample
+Disadvantages: does not give any new data, you are just reusing the same data</p>
+</li>
+<li><p>Bootstrap uses replacement while cross validation does not change any of the data, bootstrapping can create multiple data sets from the original data and choose, while cross validation recreates the same exact data and choose different training and testing data</p>
+</li>
+<li><p>Ensamble learning uses multiple learning algorithms to create better regression models.  Bagging or bootstrapping is reusing data from the original samples.  Bootstrapping is used when there isn&#39;t enough data in the data sets</p>
+</li>
+<li><p>Support vector machines, Decision trees, regression, neural networks and K-means are some classification techniques.  Random forests can use bootstrapping and extra trees to help create multiple decision trees.  It uses regression to predict the outcome.  Bagging or bootstrapping can be used in random forests to create the next tree.  Extra trees are trained data using the learning sample (not the bootstrap sample) to split the trees and use the data of the highest scoring sample.  Since random forest is comprised of decision trees, it will have the properties of decison trees, which is having the ability to transverse through the tree based on your decisons.</p>
+</li>
+<li><p>Advantages: does both classification and regression, can handle large amounts of data, good regression usages, can balance errors, can detect the data (if its a outlier etc.), uses bootstrapping so you don&#39;t need a test set</p>
+<p>Disadvantages: cannot predict the regression beyond the training data and may overfit, it is very random so it is very hard to get the results you want as any randomness will change the output</p>
+</li>
+<li><p>Subset selection methods are Filter and Wrapper methods, filter- measure the importance of the features by their relationships to the dependent variable, wrapper- measure the usefulness of a subset by training a model on it</p>
+</li>
+</ol>
+<p>subset selection is when you select the features of the data that you want and only use that data for your dataset/model, cross validation splits the data into k groups and select different training and testing per group/set</p>
+<p>ex. a data set of 12 features, in subset selection, you can select any of the features and only use the data from those features, lets name the features 1-12 if only the first 6 datas are relevent to your graph, then you can just select 1,2,3,4,5,6 or you can skip around 1,4,6,8,5,3, the order does not matter, however in cross validation, you will choose the k which will determine how many groups of data will be created.  lets say the k is 4 then 4 groups of data will be created within the each group of data, every single data is present and will be split differently between training and testing data.  Group 1 will have a different split, so does group 2, no 2 groups will have the same split.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;random_forest_data.csv&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Unnamed: 0</th>
+      <th>acousticness</th>
+      <th>analysis_url</th>
+      <th>danceability</th>
+      <th>duration_ms</th>
+      <th>energy</th>
+      <th>id</th>
+      <th>instrumentalness</th>
+      <th>key</th>
+      <th>liveness</th>
+      <th>loudness</th>
+      <th>mode</th>
+      <th>speechiness</th>
+      <th>tempo</th>
+      <th>time_signature</th>
+      <th>track_href</th>
+      <th>type</th>
+      <th>uri</th>
+      <th>valence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0.40000</td>
+      <td>https://api.spotify.com/v1/audio-analysis/3AEZ...</td>
+      <td>0.761</td>
+      <td>222560</td>
+      <td>0.838</td>
+      <td>3AEZUABDXNtecAOSC1qTfo</td>
+      <td>0.000000</td>
+      <td>4</td>
+      <td>0.176</td>
+      <td>-3.073</td>
+      <td>0</td>
+      <td>0.0502</td>
+      <td>93.974</td>
+      <td>4</td>
+      <td>https://api.spotify.com/v1/tracks/3AEZUABDXNte...</td>
+      <td>audio_features</td>
+      <td>spotify:track:3AEZUABDXNtecAOSC1qTfo</td>
+      <td>0.710</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>0.18700</td>
+      <td>https://api.spotify.com/v1/audio-analysis/6mIC...</td>
+      <td>0.852</td>
+      <td>195840</td>
+      <td>0.773</td>
+      <td>6mICuAdrwEjh6Y6lroV2Kg</td>
+      <td>0.000030</td>
+      <td>8</td>
+      <td>0.159</td>
+      <td>-2.921</td>
+      <td>0</td>
+      <td>0.0776</td>
+      <td>102.034</td>
+      <td>4</td>
+      <td>https://api.spotify.com/v1/tracks/6mICuAdrwEjh...</td>
+      <td>audio_features</td>
+      <td>spotify:track:6mICuAdrwEjh6Y6lroV2Kg</td>
+      <td>0.907</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>0.05590</td>
+      <td>https://api.spotify.com/v1/audio-analysis/3QwB...</td>
+      <td>0.832</td>
+      <td>209453</td>
+      <td>0.772</td>
+      <td>3QwBODjSEzelZyVjxPOHdq</td>
+      <td>0.000486</td>
+      <td>10</td>
+      <td>0.440</td>
+      <td>-5.429</td>
+      <td>1</td>
+      <td>0.1000</td>
+      <td>96.016</td>
+      <td>4</td>
+      <td>https://api.spotify.com/v1/tracks/3QwBODjSEzel...</td>
+      <td>audio_features</td>
+      <td>spotify:track:3QwBODjSEzelZyVjxPOHdq</td>
+      <td>0.704</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>0.00431</td>
+      <td>https://api.spotify.com/v1/audio-analysis/7DM4...</td>
+      <td>0.663</td>
+      <td>259196</td>
+      <td>0.920</td>
+      <td>7DM4BPaS7uofFul3ywMe46</td>
+      <td>0.000017</td>
+      <td>11</td>
+      <td>0.101</td>
+      <td>-4.070</td>
+      <td>0</td>
+      <td>0.2260</td>
+      <td>99.935</td>
+      <td>4</td>
+      <td>https://api.spotify.com/v1/tracks/7DM4BPaS7uof...</td>
+      <td>audio_features</td>
+      <td>spotify:track:7DM4BPaS7uofFul3ywMe46</td>
+      <td>0.533</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4</td>
+      <td>0.55100</td>
+      <td>https://api.spotify.com/v1/audio-analysis/6rQS...</td>
+      <td>0.508</td>
+      <td>205600</td>
+      <td>0.687</td>
+      <td>6rQSrBHf7HlZjtcMZ4S4bO</td>
+      <td>0.000003</td>
+      <td>0</td>
+      <td>0.126</td>
+      <td>-4.361</td>
+      <td>1</td>
+      <td>0.3260</td>
+      <td>180.044</td>
+      <td>4</td>
+      <td>https://api.spotify.com/v1/tracks/6rQSrBHf7HlZ...</td>
+      <td>audio_features</td>
+      <td>spotify:track:6rQSrBHf7HlZjtcMZ4S4bO</td>
+      <td>0.555</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[4]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Index([&#39;Unnamed: 0&#39;, &#39;acousticness&#39;, &#39;analysis_url&#39;, &#39;danceability&#39;,
+       &#39;duration_ms&#39;, &#39;energy&#39;, &#39;id&#39;, &#39;instrumentalness&#39;, &#39;key&#39;, &#39;liveness&#39;,
+       &#39;loudness&#39;, &#39;mode&#39;, &#39;speechiness&#39;, &#39;tempo&#39;, &#39;time_signature&#39;,
+       &#39;track_href&#39;, &#39;type&#39;, &#39;uri&#39;, &#39;valence&#39;],
+      dtype=&#39;object&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">({</span><span class="s1">&#39;analysis_url&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span><span class="s1">&#39;Unnamed: 0&#39;</span><span class="p">,</span><span class="s1">&#39;track_href&#39;</span><span class="p">,</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;uri&#39;</span><span class="p">},</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>acousticness</th>
+      <th>danceability</th>
+      <th>duration_ms</th>
+      <th>energy</th>
+      <th>instrumentalness</th>
+      <th>key</th>
+      <th>liveness</th>
+      <th>loudness</th>
+      <th>mode</th>
+      <th>speechiness</th>
+      <th>tempo</th>
+      <th>time_signature</th>
+      <th>valence</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.40000</td>
+      <td>0.761</td>
+      <td>222560</td>
+      <td>0.838</td>
+      <td>0.000000</td>
+      <td>4</td>
+      <td>0.176</td>
+      <td>-3.073</td>
+      <td>0</td>
+      <td>0.0502</td>
+      <td>93.974</td>
+      <td>4</td>
+      <td>0.710</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.18700</td>
+      <td>0.852</td>
+      <td>195840</td>
+      <td>0.773</td>
+      <td>0.000030</td>
+      <td>8</td>
+      <td>0.159</td>
+      <td>-2.921</td>
+      <td>0</td>
+      <td>0.0776</td>
+      <td>102.034</td>
+      <td>4</td>
+      <td>0.907</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.05590</td>
+      <td>0.832</td>
+      <td>209453</td>
+      <td>0.772</td>
+      <td>0.000486</td>
+      <td>10</td>
+      <td>0.440</td>
+      <td>-5.429</td>
+      <td>1</td>
+      <td>0.1000</td>
+      <td>96.016</td>
+      <td>4</td>
+      <td>0.704</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.00431</td>
+      <td>0.663</td>
+      <td>259196</td>
+      <td>0.920</td>
+      <td>0.000017</td>
+      <td>11</td>
+      <td>0.101</td>
+      <td>-4.070</td>
+      <td>0</td>
+      <td>0.2260</td>
+      <td>99.935</td>
+      <td>4</td>
+      <td>0.533</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.55100</td>
+      <td>0.508</td>
+      <td>205600</td>
+      <td>0.687</td>
+      <td>0.000003</td>
+      <td>0</td>
+      <td>0.126</td>
+      <td>-4.361</td>
+      <td>1</td>
+      <td>0.3260</td>
+      <td>180.044</td>
+      <td>4</td>
+      <td>0.555</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Index([&#39;acousticness&#39;, &#39;danceability&#39;, &#39;duration_ms&#39;, &#39;energy&#39;,
+       &#39;instrumentalness&#39;, &#39;key&#39;, &#39;liveness&#39;, &#39;loudness&#39;, &#39;mode&#39;,
+       &#39;speechiness&#39;, &#39;tempo&#39;, &#39;time_signature&#39;, &#39;valence&#39;],
+      dtype=&#39;object&#39;)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;acousticness&#39;</span><span class="p">,</span> <span class="s1">&#39;danceability&#39;</span><span class="p">,</span> <span class="s1">&#39;duration_ms&#39;</span><span class="p">,</span> <span class="s1">&#39;energy&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;instrumentalness&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;liveness&#39;</span><span class="p">,</span> <span class="s1">&#39;loudness&#39;</span><span class="p">,</span> <span class="s1">&#39;mode&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;speechiness&#39;</span><span class="p">,</span> <span class="s1">&#39;tempo&#39;</span><span class="p">,</span> <span class="s1">&#39;time_signature&#39;</span><span class="p">]]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;valence&#39;</span><span class="p">]</span>
+<span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">RandomForestRegressor</span>
+
+<span class="n">regressor</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">regressor</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>RandomForestRegressor(bootstrap=True, criterion=&#39;mse&#39;, max_depth=None,
+                      max_features=&#39;auto&#39;, max_leaf_nodes=None,
+                      min_impurity_decrease=0.0, min_impurity_split=None,
+                      min_samples_leaf=1, min_samples_split=2,
+                      min_weight_fraction_leaf=0.0, n_estimators=15,
+                      n_jobs=None, oob_score=False, random_state=2, verbose=0,
+                      warm_start=False)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">y_pred</span><span class="o">=</span><span class="n">regressor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">score</span> <span class="o">=</span> <span class="n">regressor</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span><span class="n">y_test</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">regressor</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mf">0.55100</span><span class="p">,</span><span class="mf">0.508</span><span class="p">,</span><span class="mi">205600</span><span class="p">,</span><span class="mf">0.687</span><span class="p">,</span><span class="mf">0.000003</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.126</span><span class="p">,</span><span class="o">-</span><span class="mf">4.361</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.3260</span><span class="p">,</span><span class="mf">180.044</span><span class="p">,</span><span class="mi">4</span><span class="p">]])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[12]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([0.555])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">feature_imp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">regressor</span><span class="o">.</span><span class="n">feature_importances_</span><span class="p">,</span><span class="n">index</span><span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">feature_imp</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[13]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>energy              0.267991
+danceability        0.223445
+tempo               0.108127
+acousticness        0.106295
+speechiness         0.072773
+duration_ms         0.070857
+loudness            0.051486
+liveness            0.045291
+instrumentalness    0.031478
+key                 0.015061
+mode                0.007082
+time_signature      0.000114
+dtype: float64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">feature_imp</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">feature_imp</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Feature Importance Score&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Features&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Visualizing Important Features&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>No handles with labels found to put in legend.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img loading="lazy" src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Accuracy: &#39;</span><span class="p">,</span><span class="n">score</span><span class="p">)</span> <span class="c1">#with a test size of .3</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Accuracy:  0.9959087727457138
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1">#this graph tells us how important each feature is towards the valence ranking from top to bottom</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">x_cv</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_cv</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">regressor</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_cv</span><span class="p">,</span> <span class="n">y_cv</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[18]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>RandomForestRegressor(bootstrap=True, criterion=&#39;mse&#39;, max_depth=None,
+                      max_features=&#39;auto&#39;, max_leaf_nodes=None,
+                      min_impurity_decrease=0.0, min_impurity_split=None,
+                      min_samples_leaf=1, min_samples_split=2,
+                      min_weight_fraction_leaf=0.0, n_estimators=15,
+                      n_jobs=None, oob_score=False, random_state=2, verbose=0,
+                      warm_start=False)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">y_pred</span><span class="o">=</span><span class="n">regressor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_cv</span><span class="p">)</span>
+<span class="n">score2</span> <span class="o">=</span> <span class="n">regressor</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">x_cv</span><span class="p">,</span><span class="n">y_cv</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Accuracy: &#39;</span><span class="p">,</span><span class="n">score2</span><span class="p">)</span> <span class="c1">#with a test size of .5</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Accuracy:  0.9976266882152395
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">MinMaxScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="k">import</span> <span class="n">SVR</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">x</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">(</span><span class="n">feature_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">train_index</span><span class="p">,</span> <span class="n">test_index</span> <span class="ow">in</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Train Index: &quot;</span><span class="p">,</span> <span class="n">train_index</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test Index: &quot;</span><span class="p">,</span> <span class="n">test_index</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Accuracy: &quot;</span><span class="p">,</span><span class="n">regressor</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span><span class="n">y</span><span class="p">[</span><span class="n">train_index</span><span class="p">]))</span>
+
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="n">test_index</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">train_index</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">test_index</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Train Index:  [ 3790  3791  3792 ... 75797 75798 75799] 
+
+Test Index:  [   0    1    2 ... 3787 3788 3789]
+Accuracy:  0.1401290806104254
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [3790 3791 3792 ... 7577 7578 7579]
+Accuracy:  0.14142250600874595
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [ 7580  7581  7582 ... 11367 11368 11369]
+Accuracy:  0.14017377617778193
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [11370 11371 11372 ... 15157 15158 15159]
+Accuracy:  0.1385104626389504
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [15160 15161 15162 ... 18947 18948 18949]
+Accuracy:  0.1401037819119939
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [18950 18951 18952 ... 22737 22738 22739]
+Accuracy:  0.1394982567656602
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [22740 22741 22742 ... 26527 26528 26529]
+Accuracy:  0.1415671751174301
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [26530 26531 26532 ... 30317 30318 30319]
+Accuracy:  0.14299882076212334
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [30320 30321 30322 ... 34107 34108 34109]
+Accuracy:  0.14122137572599847
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [34110 34111 34112 ... 37897 37898 37899]
+Accuracy:  0.14243967594924867
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [37900 37901 37902 ... 41687 41688 41689]
+Accuracy:  0.14076647075207838
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [41690 41691 41692 ... 45477 45478 45479]
+Accuracy:  0.1404051185227858
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [45480 45481 45482 ... 49267 49268 49269]
+Accuracy:  0.13955393727697285
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [49270 49271 49272 ... 53057 53058 53059]
+Accuracy:  0.13875229008917067
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [53060 53061 53062 ... 56847 56848 56849]
+Accuracy:  0.13945110445200493
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [56850 56851 56852 ... 60637 60638 60639]
+Accuracy:  0.1384128610562244
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [60640 60641 60642 ... 64427 64428 64429]
+Accuracy:  0.14004337343413764
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [64430 64431 64432 ... 68217 68218 68219]
+Accuracy:  0.13903915957682433
+Train Index:  [    0     1     2 ... 75797 75798 75799] 
+
+Test Index:  [68220 68221 68222 ... 72007 72008 72009]
+Accuracy:  0.13878783441534748
+Train Index:  [    0     1     2 ... 72007 72008 72009] 
+
+Test Index:  [72010 72011 72012 ... 75797 75798 75799]
+Accuracy:  0.13983501808454235
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1">#The best model is the one in the middle</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+  </div>
+
+
+ 
+
+
+
+<script type="text/javascript" src="/d2l/common/math/MathML.js?v=20.19.11.19140-173 "></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() { D2LMathML.DesktopInit('https://s.brightspace.com/lib/mathjax/2.6.1/MathJax.js?config=MML_HTMLorMML','https://s.brightspace.com/lib/mathjax/2.6.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML'); });</script></body></html>
